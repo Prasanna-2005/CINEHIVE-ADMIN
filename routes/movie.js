@@ -1,32 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../config/db");
-const multer = require("multer");
 const path = require("path");
 const fs = require('fs');
 
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: function(req, file, cb) {
-      let dest;
-      if (file.fieldname === 'grid_img') {
-        dest = path.join(__dirname, '../../CLIENT/uploads/grid_images');
-      } else {
-        dest = path.join(__dirname, '../../CLIENT/uploads/theme_images');
-      }
-      
-      // Create directory if it doesn't exist
-      if (!fs.existsSync(dest)) {
-        fs.mkdirSync(dest, { recursive: true });
-      }
-      
-      cb(null, dest);
-    },
-    filename: function(req, file, cb) {
-      cb(null, req.params.id + ".jpg");
-    }
-  })
-});
 
 
 // *******************************************************************************************************************************
@@ -118,13 +95,8 @@ router.get("/add-movie", isAuthenticated, async (req, res) => {
 
 
 
-const uploadFiles = upload.fields([
-  { name: "grid_img", maxCount: 1 },
-  { name: "poster_img", maxCount: 1 },
-]);
-
 // post request for adding movie
-router.post("/add-movie", isAuthenticated, uploadFiles, async (req, res) => {
+router.post("/add-movie", isAuthenticated, async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
@@ -157,23 +129,7 @@ router.post("/add-movie", isAuthenticated, uploadFiles, async (req, res) => {
     );
 
     const movieId = result.insertId;
-    if (req.files["grid_img"]) {
-      const gridImgFile = req.files["grid_img"][0];
-      const newGridImgPath = path.join(
-        gridImgFile.destination,
-        `${movieId}.jpg}`
-      );
-      fs.renameSync(gridImgFile.path, newGridImgPath);
-    }
-
-    if (req.files["poster_img"]) {
-      const posterImgFile = req.files["poster_img"][0];
-      const newPosterImgPath = path.join(
-        posterImgFile.destination,
-        `${movieId}.jpg}`
-      );
-      fs.renameSync(posterImgFile.path, newPosterImgPath);
-    }
+   
       if (genres) {
         const genreValues = Array.isArray(genres) ? genres : [genres];
         for (const genreId of genreValues) {
@@ -237,17 +193,6 @@ router.delete("/delete-movie/:id", isAuthenticated, async (req, res) => {
       await connection.rollback();
       return res.status(404).json({ message: "Movie not found" });
     }
-
-    // Define image paths
-    const gridImgPath = path.join(__dirname, `../uploads/grid_images/${movieId}.jpg`);
-    const posterImgPath = path.join(__dirname, `../uploads/theme_images/${movieId}.jpg`);
-
-    // Delete image files if they exist
-    [gridImgPath, posterImgPath].forEach((filePath) => {
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    });
 
     // Delete movie record
     await connection.query("DELETE FROM movies WHERE id = ?", [movieId]);
@@ -328,7 +273,7 @@ router.get("/edit-movie/:id", isAuthenticated, async (req, res) => {
 
 
 // Apply the middleware directly to the route
-router.post("/update-movie/:id", upload.any(), async (req, res) => {
+router.post("/update-movie/:id", async (req, res) => {
   
   const connection = await db.getConnection();
 

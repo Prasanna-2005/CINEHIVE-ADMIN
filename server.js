@@ -41,7 +41,7 @@ app.use("/genres", genreRoutes);
 app.use("/", movieRoutes);
 app.use('/people', peopleRoutes);
 
-const PORT = process.env.X_ZOHO_CATALYST_LISTEN_PORT||3003
+const PORT = process.env.X_ZOHO_CATALYST_LISTEN_PORT||3004
 app.listen(PORT, () =>
   console.log(`Admin panel running at: http://localhost:${PORT}`) //web @ https://appsail-50025756072.development.catalystappsail.in
 );
