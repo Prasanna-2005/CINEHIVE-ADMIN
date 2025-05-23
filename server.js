@@ -11,7 +11,9 @@ app.use(
     secret: "12345",
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: false },
+    cookie: { secure: false,
+      maxAge: 24 * 60 * 60 * 1000
+     },
   })
 );
 
@@ -41,7 +43,7 @@ app.use("/genres", genreRoutes);
 app.use("/", movieRoutes);
 app.use('/people', peopleRoutes);
 
-const PORT = process.env.X_ZOHO_CATALYST_LISTEN_PORT||3004
+const PORT = 3000;
 app.listen(PORT, () =>
-  console.log(`Admin panel running at: http://localhost:${PORT}`) //web @ https://appsail-50025756072.development.catalystappsail.in
+  console.log(`Admin panel running at: http://localhost:${PORT}`) 
 );
